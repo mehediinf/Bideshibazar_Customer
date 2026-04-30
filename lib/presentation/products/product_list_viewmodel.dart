@@ -22,7 +22,7 @@ class ProductListViewModel extends ChangeNotifier {
   ProductListResponse? _productListResponse;
   bool _isLoading = false;
   String? _errorMessage;
-  String _selectedShop = 'All';
+  String _selectedShop = '';
 
   // Store products (separate from subcategory products)
   List<Product> _storeProducts = [];
@@ -42,8 +42,8 @@ class ProductListViewModel extends ChangeNotifier {
       return [];
     }
 
-    if (_productListResponse == null) return ['All'];
-    return ['All', ..._productListResponse!.data.keys];
+    if (_productListResponse == null) return [];
+    return _productListResponse!.data.keys.toList();
   }
 
   // Get filtered products based on selected shop
@@ -54,15 +54,11 @@ class ProductListViewModel extends ChangeNotifier {
 
     if (_productListResponse == null) return [];
 
-    if (_selectedShop == 'All') {
-      List<Product> allProducts = [];
-      _productListResponse!.data.forEach((key, products) {
-        allProducts.addAll(products);
-      });
-      return allProducts;
-    } else {
-      return _productListResponse!.data[_selectedShop] ?? [];
+    if (_selectedShop.isEmpty && _productListResponse!.data.isNotEmpty) {
+      return _productListResponse!.data.values.first;
     }
+
+    return _productListResponse!.data[_selectedShop] ?? [];
   }
 
   // Get product data (quantity and wishlist status)
@@ -138,7 +134,8 @@ class ProductListViewModel extends ChangeNotifier {
       } else if (response.statusCode == 200) {
         if (response.data != null && response.data is Map) {
           _productListResponse = ProductListResponse.fromJson(response.data);
-          _selectedShop = 'All';
+          final shops = _productListResponse!.data.keys.toList();
+          _selectedShop = shops.isNotEmpty ? shops.first : '';
           debugPrint(
             'Products loaded successfully: ${filteredProducts.length} items',
           );

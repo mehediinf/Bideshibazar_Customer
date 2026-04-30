@@ -25,19 +25,24 @@ class FloatingCartWidget extends StatelessWidget {
           right: 0,
           bottom: 0,
           child: Container(
-            margin: const EdgeInsets.all(12),
+            margin: const EdgeInsets.fromLTRB(14, 0, 14, 0),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
+                colors: [Color(0xFF2F8BFF), Color(0xFF1F6FE5), Color(0xFF155CC6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.22),
+                width: 0.8,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  color: const Color(0xFF1459BE).withValues(alpha: 0.34),
+                  blurRadius: 18,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
@@ -45,11 +50,11 @@ class FloatingCartWidget extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: onTap,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
+                    horizontal: 16,
+                    vertical: 11,
                   ),
                   child: Row(
                     children: [
@@ -66,10 +71,17 @@ class FloatingCartWidget extends StatelessWidget {
                             right: -6,
                             top: -6,
                             child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFFF6B35),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF8A3D),
                                 shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  width: 1.1,
+                                ),
                               ),
                               constraints: const BoxConstraints(
                                 minWidth: 20,
@@ -80,8 +92,8 @@ class FloatingCartWidget extends StatelessWidget {
                                   '${cartManager.totalItems > 99 ? '99+' : cartManager.totalItems}',
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
                               ),
@@ -89,7 +101,7 @@ class FloatingCartWidget extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 14),
                       // Item Count & Price
                       Expanded(
                         child: Column(
@@ -102,8 +114,8 @@ class FloatingCartWidget extends StatelessWidget {
                                   '${cartManager.totalItems} item${cartManager.totalItems > 1 ? 's' : ''}',
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                                 if (cartManager.isSyncing) ...[
@@ -123,8 +135,9 @@ class FloatingCartWidget extends StatelessWidget {
                             Text(
                               'Delivery Charges may apply',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.85),
-                                fontSize: 11,
+                                color: Colors.white.withValues(alpha: 0.88),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
@@ -133,12 +146,23 @@ class FloatingCartWidget extends StatelessWidget {
                       // Price & Arrow
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
+                          horizontal: 15,
+                          vertical: 9,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withValues(alpha: 0.26),
+                              Colors.white.withValues(alpha: 0.16),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(13),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.20),
+                            width: 0.9,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -147,15 +171,15 @@ class FloatingCartWidget extends StatelessWidget {
                               '€${cartManager.totalPrice.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 7),
                             const Icon(
                               Icons.arrow_forward_rounded,
                               color: Colors.white,
-                              size: 20,
+                              size: 19,
                             ),
                           ],
                         ),

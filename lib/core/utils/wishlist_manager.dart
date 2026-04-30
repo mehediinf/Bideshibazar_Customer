@@ -85,6 +85,9 @@ class WishlistManager extends ChangeNotifier {
         return false;
       }
 
+      // Always sync first to avoid stale local state.
+      await loadWishlist();
+
       // Check if product is already in wishlist
       final existingItem = getWishlistItem(productId);
 
@@ -118,15 +121,22 @@ class WishlistManager extends ChangeNotifier {
         {'product_id': productId.toString()},
       );
 
-      final response = WishlistResponse.fromJson(responseData);
+      final errorText = responseData['error']?.toString().toLowerCase() ?? '';
+      if (errorText.contains('already exists')) {
+        await loadWishlist();
+        _showToast('Already in Wishlist ❤️');
+        developer.log('ℹ️ Wishlist already contains product $productId');
+        return true;
+      }
 
-      _wishlistItems.clear();
-      _wishlistItems.addAll(response.wishlistItems);
-
-      _showToast('Added to Wishlist ❤️');
-      notifyListeners();
-      developer.log('✅ Added to wishlist successfully');
-      return true;
+      final synced = await _syncWishlistFromResponseOrReload(responseData);
+      if (synced) {
+        _showToast('Added to Wishlist ❤️');
+        developer.log('✅ Added to wishlist successfully');
+      } else {
+        _showToast('Added, but failed to refresh wishlist');
+      }
+      return synced;
     } catch (e) {
       developer.log('❌ Error adding to wishlist: $e');
       _showToast('Failed to add to wishlist');
@@ -150,15 +160,14 @@ class WishlistManager extends ChangeNotifier {
         wishlistItemId,
       );
 
-      final response = WishlistResponse.fromJson(responseData);
-
-      _wishlistItems.clear();
-      _wishlistItems.addAll(response.wishlistItems);
-
-      _showToast('Removed from Wishlist 💔');
-      notifyListeners();
-      developer.log('✅ Removed from wishlist successfully');
-      return true;
+      final synced = await _syncWishlistFromResponseOrReload(responseData);
+      if (synced) {
+        _showToast('Removed from Wishlist 💔');
+        developer.log('✅ Removed from wishlist successfully');
+      } else {
+        _showToast('Removed, but failed to refresh wishlist');
+      }
+      return synced;
     } catch (e) {
       developer.log('❌ Error removing from wishlist: $e');
       _showToast('Failed to remove from wishlist');
@@ -182,5 +191,26 @@ class WishlistManager extends ChangeNotifier {
       textColor: Colors.white,
       fontSize: 14.0,
     );
+  }
+
+  Future<bool> _syncWishlistFromResponseOrReload(
+    Map<String, dynamic> responseData,
+  ) async {
+    try {
+      final response = WishlistResponse.fromJson(responseData);
+      if (response.wishlistItems.isNotEmpty) {
+        _wishlistItems
+          ..clear()
+          ..addAll(response.wishlistItems);
+        notifyListeners();
+        return true;
+      }
+
+      await loadWishlist();
+      return true;
+    } catch (_) {
+      await loadWishlist();
+      return true;
+    }
   }
 }

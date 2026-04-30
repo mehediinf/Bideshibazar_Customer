@@ -102,35 +102,77 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildBottomNavBar() {
-    return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      elevation: 12,
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: Colors.orange,
-      unselectedItemColor: Colors.grey,
-      showUnselectedLabels: true,
-      onTap: (index) {
-        if (index == 3) {
-          // Search tab
-          _navigateToSearch();
-        } else {
-          setState(() {
-            _currentIndex = index;
-          });
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.widgets_outlined),
-          label: "Categories",
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: NavigationBarTheme(
+        data: NavigationBarThemeData(
+          height: 66,
+          backgroundColor: Colors.white,
+          indicatorColor: const Color(0xFFFFF1E8),
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            final isSelected = states.contains(WidgetState.selected);
+            return TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected
+                  ? const Color(0xFFFF8C42)
+                  : Colors.grey.shade600,
+            );
+          }),
+          iconTheme: WidgetStateProperty.resolveWith((states) {
+            final isSelected = states.contains(WidgetState.selected);
+            return IconThemeData(
+              size: 22,
+              color: isSelected
+                  ? const Color(0xFFFF8C42)
+                  : Colors.grey.shade500,
+            );
+          }),
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.store), label: "Store"),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.search_rounded),
-          label: "Search",
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: (index) {
+            if (index == 3) {
+              _navigateToSearch();
+              return;
+            }
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.grid_view_rounded),
+              selectedIcon: Icon(Icons.grid_view_rounded),
+              label: 'Categories',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.storefront_outlined),
+              selectedIcon: Icon(Icons.storefront_rounded),
+              label: 'Store',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.search_rounded),
+              selectedIcon: Icon(Icons.travel_explore_rounded),
+              label: 'Search',
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

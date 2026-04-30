@@ -1479,7 +1479,7 @@ class _SubcategorySectionWidgetState extends State<_SubcategorySectionWidget> {
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 280,
+            height: 238,
             child: ListView.builder(
               key: PageStorageKey(
                 '${widget.subcategoryName}-${selectedSeller['name']}-products',

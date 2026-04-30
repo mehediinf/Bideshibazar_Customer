@@ -110,13 +110,29 @@ class WishlistResponse {
   });
 
   factory WishlistResponse.fromJson(Map<String, dynamic> json) {
+    final dynamic rawItems =
+        json['wishlistItems'] ??
+        json['wishlist_items'] ??
+        json['wishlist'] ??
+        json['data'];
+
+    final List<dynamic> items =
+        rawItems is List
+            ? rawItems
+            : (rawItems is Map<String, dynamic> && rawItems['wishlist'] is List
+                ? rawItems['wishlist'] as List<dynamic>
+                : <dynamic>[]);
+
     return WishlistResponse(
-      message: json['message'] ?? '',
-      wishlistItems: (json['wishlistItems'] as List<dynamic>?)
-          ?.map((item) => WishlistItem.fromJson(item))
-          .toList() ??
-          [],
-      wishlistCount: json['wishlistCount'] ?? 0,
+      message: (json['message'] ?? json['error'] ?? '').toString(),
+      wishlistItems: items
+          .whereType<Map>()
+          .map((item) => WishlistItem.fromJson(Map<String, dynamic>.from(item)))
+          .toList(),
+      wishlistCount:
+          json['wishlistCount'] ??
+          json['wishlist_count'] ??
+          (items.length),
     );
   }
 }

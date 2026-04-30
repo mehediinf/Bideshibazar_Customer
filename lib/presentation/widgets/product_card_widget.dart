@@ -149,7 +149,7 @@ class ProductCardWidget extends StatelessWidget {
     CartManager cartManager,
   ) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final cardWidth = screenWidth * 0.38;
+    final cardWidth = screenWidth * 0.35;
 
     return GestureDetector(
       onTap: () {
@@ -158,8 +158,8 @@ class ProductCardWidget extends StatelessWidget {
         }
       },
       child: Container(
-        width: cardWidth.clamp(140.0, 170.0),
-        margin: const EdgeInsets.only(right: 12, bottom: 4),
+        width: cardWidth.clamp(128.0, 154.0),
+        margin: const EdgeInsets.only(right: 10, bottom: 4),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -182,7 +182,7 @@ class ProductCardWidget extends StatelessWidget {
               children: [
                 Container(
                   width: double.infinity,
-                  height: 130,
+                  height: 112,
                   decoration: BoxDecoration(
                     color: Colors.grey[50],
                     borderRadius: const BorderRadius.vertical(
@@ -194,11 +194,11 @@ class ProductCardWidget extends StatelessWidget {
                       top: Radius.circular(12),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.all(8.0),
                       child: CachedNetworkImage(
                         imageUrl: _resolveImageUrl(data),
                         width: double.infinity,
-                        height: 120,
+                        height: 102,
                         fit: BoxFit.contain,
                         fadeInDuration: Duration.zero,
                         placeholderFadeInDuration: Duration.zero,
@@ -266,18 +266,18 @@ class ProductCardWidget extends StatelessWidget {
 
             // Content Section - Optimized
             Padding(
-              padding: const EdgeInsets.fromLTRB(9, 8, 9, 8),
+              padding: const EdgeInsets.fromLTRB(8, 7, 8, 7),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Product Name - Larger
                   SizedBox(
-                    height: 36,
+                    height: 32,
                     child: Text(
                       data['name'] ?? '',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                         height: 1.3,
@@ -288,7 +288,7 @@ class ProductCardWidget extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
 
                   // Weight Badge
                   Container(
@@ -314,7 +314,7 @@ class ProductCardWidget extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 5),
 
                   // Price & Add Button Row
                   Row(
@@ -329,7 +329,7 @@ class ProductCardWidget extends StatelessWidget {
                             Text(
                               '€${data['price'].toStringAsFixed(2)}',
                               style: const TextStyle(
-                                fontSize: 14.5,
+                                fontSize: 13.5,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFFFF6B35),
                                 letterSpacing: -0.3,
@@ -386,10 +386,10 @@ class ProductCardWidget extends StatelessWidget {
         builder: (context, constraints) {
           final cardWidth = constraints.maxWidth;
           final isCompact = cardWidth < 170;
-          final imageHeight = isCompact ? 112.0 : 125.0;
-          final contentPadding = isCompact ? 8.5 : 10.0;
-          final titleHeight = isCompact ? 38.0 : 34.0;
-          final titleFontSize = isCompact ? 12.5 : 13.0;
+          final imageHeight = isCompact ? 104.0 : 116.0;
+          final contentPadding = isCompact ? 8.0 : 9.0;
+          final titleHeight = isCompact ? 34.0 : 32.0;
+          final titleFontSize = isCompact ? 12.0 : 12.5;
           final titleSpacing = isCompact ? 5.0 : 6.0;
           final priceFontSize = isCompact ? 14.5 : 15.5;
           final oldPriceFontSize = isCompact ? 10.0 : 10.5;
@@ -429,7 +429,7 @@ class ProductCardWidget extends StatelessWidget {
                           top: Radius.circular(14),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.all(isCompact ? 10.0 : 12.0),
+                          padding: EdgeInsets.all(isCompact ? 8.0 : 10.0),
                           child: CachedNetworkImage(
                             imageUrl: _resolveImageUrl(data),
                             fit: BoxFit.contain,

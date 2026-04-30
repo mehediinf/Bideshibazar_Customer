@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../core/services/product_detail_service.dart';
 import '../../core/network/api_constants.dart';
 import '../../core/utils/cart_manager.dart';
@@ -123,15 +124,27 @@ class _ProductDetailViewState extends State<ProductDetailView> {
   }
 
   // Check if product is in wishlist
+  int _wishlistProductId() {
+    if (productData != null) {
+      final productId = _parseInt(productData!['product_id']);
+      if (productId > 0) return productId;
+
+      final shopProductId = _parseInt(productData!['shop_product_id']);
+      if (shopProductId > 0) return shopProductId;
+    }
+    return widget.shopProductId;
+  }
+
   bool _isInWishlist() {
-    return _wishlistManager.isInWishlist(widget.shopProductId);
+    return _wishlistManager.isInWishlist(_wishlistProductId());
   }
 
   // Toggle wishlist with WishlistManager
   Future<void> _toggleWishlist() async {
     developer.log('⭐ Wishlist button tapped in ProductDetail');
 
-    await _wishlistManager.toggleWishlist(context, widget.shopProductId);
+    final productId = _wishlistProductId();
+    await _wishlistManager.toggleWishlist(context, productId);
 
     // Update UI
     if (mounted) {
@@ -248,6 +261,35 @@ class _ProductDetailViewState extends State<ProductDetailView> {
         ),
       ),
     );
+  }
+
+  Future<void> _shareProduct() async {
+    if (productData == null) return;
+
+    final name =
+        productData!['name']?.toString().trim().isNotEmpty == true
+            ? productData!['name'].toString().trim()
+            : 'Product';
+    final shopName = productData!['shop_name']?.toString().trim() ?? '';
+    final priceText = productData!['sales_price_with_charge']?.toString() ?? '';
+    final imageUrl = _getImageUrl(productData!['image']?.toString());
+
+    final lines = <String>[
+      'Check this product on BideshiBazar:',
+      name,
+      if (priceText.isNotEmpty) 'Price: €$priceText',
+      if (shopName.isNotEmpty) 'Shop: $shopName',
+      if (imageUrl.isNotEmpty) imageUrl,
+    ];
+
+    try {
+      await Share.share(lines.join('\n'));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open share options.')),
+      );
+    }
   }
 
   Future<void> _addToCart() async {
@@ -389,7 +431,7 @@ class _ProductDetailViewState extends State<ProductDetailView> {
           ),
           IconButton(
             icon: const Icon(Icons.share, color: Colors.black),
-            onPressed: () {},
+            onPressed: _shareProduct,
           ),
         ],
       ),
@@ -979,11 +1021,16 @@ class _ProductDetailViewState extends State<ProductDetailView> {
       child: Container(
         width: cardWidth,
         decoration: BoxDecoration(
-          color: Colors.white,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFFCF8), Color(0xFFFFF4EA)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFFFE6D2), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: const Color(0xFFFF6B35).withValues(alpha: 0.08),
               blurRadius: 14,
               offset: const Offset(0, 6),
             ),
@@ -1059,6 +1106,14 @@ class _ProductDetailViewState extends State<ProductDetailView> {
                 ),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
+                    final isVeryTight = constraints.maxHeight <= 74;
+                    final showWeightChip =
+                        weightLabel.isNotEmpty &&
+                        constraints.maxHeight > (isCompact ? 122 : 132);
+                    final nameMaxLines = isVeryTight
+                        ? 1
+                        : (showWeightChip ? 2 : 3);
+
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1072,49 +1127,67 @@ class _ProductDetailViewState extends State<ProductDetailView> {
                             color: Colors.grey.shade600,
                           ),
                         ),
-                        SizedBox(height: isCompact ? 6 : 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                name,
-                                maxLines: weightLabel.isNotEmpty ? 2 : 3,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: isCompact ? 14 : 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black87,
-                                  height: 1.22,
-                                ),
-                              ),
-                              if (weightLabel.isNotEmpty) ...[
-                                SizedBox(height: isCompact ? 8 : 10),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: isCompact ? 4 : 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F5F9),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
+                        SizedBox(height: isVeryTight ? 4 : (isCompact ? 6 : 8)),
+                        Flexible(
+                          child: isVeryTight
+                              ? Align(
+                                  alignment: Alignment.topLeft,
                                   child: Text(
-                                    weightLabel,
+                                    name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF475569),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black87,
+                                      height: 1.05,
                                     ),
                                   ),
+                                )
+                              : Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name,
+                                      maxLines: nameMaxLines,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: isCompact ? 14 : 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black87,
+                                        height: 1.18,
+                                      ),
+                                    ),
+                                    if (showWeightChip) ...[
+                                      SizedBox(height: isCompact ? 6 : 7),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: isCompact ? 4 : 5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF1F5F9),
+                                          borderRadius: BorderRadius.circular(
+                                            999,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          weightLabel,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF475569),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
-                              ],
-                            ],
-                          ),
                         ),
-                        SizedBox(height: isCompact ? 8 : 10),
+                        SizedBox(height: isVeryTight ? 6 : (isCompact ? 8 : 10)),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
