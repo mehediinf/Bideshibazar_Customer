@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "296549560438",
+    "project_id": "bideshibazar-34bb1",
+    "storage_bucket": "bideshibazar-34bb1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:296549560438:android:15fc2ddc9f83bc44e66f57",
+        "android_client_info": {
+          "package_name": "com.mtach.bideshibazar"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "296549560438-a4t6f735p6cern73fhlscd0k78mpafs4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mtach.bideshibazar",
+            "certificate_hash": "5f3454102e8e7fb027ebc41b37fc287d9d0c0202"
+          }
+        },
+        {
+          "client_id": "296549560438-ibqcqnnad6r8jru6ol7jlm1bi066gkqt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mtach.bideshibazar",
+            "certificate_hash": "f245f020e56a54629deef5950463a8e07a83586a"
+          }
+        },
+        {
+          "client_id": "296549560438-3v2mej6urs20joo402dkfv759buucr0c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCr8PKs9iluq2mLPz1PkL7ZPue2-x0JTzU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "296549560438-3v2mej6urs20joo402dkfv759buucr0c.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "296549560438-ltd5d64519nlu4l8nrs2clomge3492me.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mtach.bideshibazar.bideshibazar"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

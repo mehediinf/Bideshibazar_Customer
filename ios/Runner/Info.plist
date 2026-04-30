@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+
+        <!-- Performance -->
+        <key>CADisableMinimumFrameDurationOnPhone</key>
+        <true/>
+
+        <!-- App Identity -->
+        <key>CFBundleDevelopmentRegion</key>
+        <string>$(DEVELOPMENT_LANGUAGE)</string>
+
+        <key>CFBundleDisplayName</key>
+        <string>Bideshibazar</string>
+
+        <key>CFBundleExecutable</key>
+        <string>$(EXECUTABLE_NAME)</string>
+
+        <key>CFBundleIdentifier</key>
+        <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+
+        <key>CFBundleInfoDictionaryVersion</key>
+        <string>6.0</string>
+
+        <key>CFBundleName</key>
+        <string>bideshibazar</string>
+
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+
+        <key>CFBundleShortVersionString</key>
+        <string>$(FLUTTER_BUILD_NAME)</string>
+
+        <key>CFBundleVersion</key>
+        <string>$(FLUTTER_BUILD_NUMBER)</string>
+
+        <!-- Google Maps -->
+        <key>GMSApiKey</key>
+        <string>AIzaSyDIvBiG8pVMxAYpC05x0saNux_1GZEwP-A</string>
+
+        <!-- Google Sign In -->
+        <key>CFBundleURLTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleTypeRole</key>
+                <string>Editor</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>com.googleusercontent.apps.296549560438-agil3290n9agr66pjmvomcaf4m5inblg</string>
+                </array>
+            </dict>
+        </array>
+
+        <key>LSApplicationQueriesSchemes</key>
+        <array>
+            <string>mailto</string>
+            <string>tel</string>
+            <string>sms</string>
+        </array>
+
+        <key>LSRequiresIPhoneOS</key>
+        <true/>
+
+        <!-- Permissions -->
+        <key>NSCameraUsageDescription</key>
+        <string>Camera access is required to upload profile photos and product images.</string>
+
+        <key>NSLocationWhenInUseUsageDescription</key>
+        <string>Your location is used to show accurate delivery options.</string>
+
+        <!-- FIXED: Required by Apple -->
+        <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+        <string>Your location is used to provide accurate delivery tracking and location-based services even when the app is in background.</string>
+
+        <key>NSPhotoLibraryUsageDescription</key>
+        <string>Photo library access is required to upload images.</string>
+        <key>NSPhotoLibraryAddUsageDescription</key>
+        <string>Photo library access is required to save downloaded images.</string>
+
+        <key>NSUserNotificationUsageDescription</key>
+        <string>Notifications are used for order updates and delivery alerts.</string>
+
+        <!-- Flutter / System -->
+        <key>UIApplicationSupportsIndirectInputEvents</key>
+        <true/>
+
+        <!-- Push Notifications -->
+        <key>UIBackgroundModes</key>
+        <array>
+            <string>remote-notification</string>
+        </array>
+
+        <!-- UI -->
+        <key>UILaunchStoryboardName</key>
+        <string>LaunchScreen</string>
+
+        <key>UIMainStoryboardFile</key>
+        <string>Main</string>
+
+        <!-- iPhone: Portrait Only -->
+        <key>UISupportedInterfaceOrientations</key>
+        <array>
+            <string>UIInterfaceOrientationPortrait</string>
+        </array>
+
+        <!-- iPad: Required for multitasking -->
+        <key>UISupportedInterfaceOrientations~ipad</key>
+        <array>
+            <string>UIInterfaceOrientationPortrait</string>
+            <string>UIInterfaceOrientationPortraitUpsideDown</string>
+            <string>UIInterfaceOrientationLandscapeLeft</string>
+            <string>UIInterfaceOrientationLandscapeRight</string>
+        </array>
+
+    </dict>
+</plist>

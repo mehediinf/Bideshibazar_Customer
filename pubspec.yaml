@@ -1,0 +1,96 @@
+name: bideshibazar
+description: Advanced app update system for Flutter with iOS and Android support
+publish_to: 'none'
+
+version: 2.0.4+12
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Network
+  http: ^1.1.2
+  dio: ^5.4.0
+
+  # State Management
+  provider: ^6.1.2
+
+  # Local Storage
+  shared_preferences: ^2.2.2
+
+  # Location & Maps
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+  flutter_typeahead: ^5.0.0
+  permission_handler: ^11.0.1
+
+  # UI
+  cached_network_image: ^3.3.0
+  shimmer: ^3.0.0
+  flutter_svg: ^2.0.9
+  lottie: ^3.3.2
+  flutter_spinkit: ^5.2.2
+  fluttertoast: ^8.2.4
+
+  # Utils
+  intl: ^0.18.1
+  logger: ^2.0.2
+  uuid: ^4.5.1
+  image_picker: ^1.0.7
+  gal: ^2.3.0
+  http_parser: ^4.0.2
+
+  # Google Services
+  google_sign_in: ^6.3.0
+
+  #Apple Services
+  sign_in_with_apple: ^6.1.2
+  crypto: ^3.0.3
+
+  # Icons
+  cupertino_icons: ^1.0.8
+
+  flutter_html: ^3.0.0-beta.2
+
+  # Web view
+  webview_flutter: ^4.4.2
+  webview_flutter_android: ^3.12.1
+  webview_flutter_wkwebview: ^3.9.4
+
+  # Firebase
+  firebase_core: ^3.10.0
+  firebase_messaging: ^15.1.5
+
+  # Local Notifications
+  flutter_local_notifications: ^17.0.0
+  share_plus: ^10.0.2
+
+  url_launcher: ^6.2.5
+
+  in_app_update: ^4.2.2
+  # App info
+  package_info_plus: ^8.0.0
+  connectivity_plus: ^5.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_launcher_icons: ^0.13.1
+  flutter_lints: ^5.0.0
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/logo.png"
+  remove_alpha_ios: true
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
