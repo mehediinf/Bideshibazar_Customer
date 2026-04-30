@@ -277,9 +277,9 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                 children: [
-                  _buildOrderOverviewCard(orderDetail, _currentUuid),
-                  const SizedBox(height: 16),
                   _buildCustomerDeliveryCard(orderDetail),
+                  const SizedBox(height: 16),
+                  _buildOrderOverviewCard(orderDetail, _currentUuid),
                   const SizedBox(height: 16),
                   _buildItemsSection(orderDetail, isEditable),
                 ],
@@ -507,20 +507,30 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Total Payable',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: _ink,
+                    const Expanded(
+                      child: Text(
+                        'Total Payable',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: _ink,
+                        ),
                       ),
                     ),
-                    Text(
-                      '€${orderDetail.total}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                        color: _primary,
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        '€${orderDetail.total}',
+                        maxLines: 1,
+                        textAlign: TextAlign.right,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: _primary,
+                        ),
                       ),
                     ),
                   ],
@@ -1064,13 +1074,13 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                                           ),
                                         ),
                                         const Spacer(),
-                                        if (!isEditable &&
-                                            !isUnavailable &&
-                                            !hasReplacement)
-                                          _buildBuyAgainButton(
-                                            onTap: () =>
-                                                _addOrderItemToCart(item),
-                                          ),
+                                        // if (!isEditable &&
+                                        //     !isUnavailable &&
+                                        //     !hasReplacement),
+                                        //   // _buildBuyAgainButton(
+                                        //   //   onTap: () =>
+                                        //   //       _addOrderItemToCart(item),
+                                        //   ),
                                       ],
                                     ],
                                   ),
@@ -1146,6 +1156,9 @@ class _OrderDetailViewState extends State<OrderDetailView> {
               _buildReplacementCard(
                 item,
                 item.replacement!,
+                index: index,
+                orderDetail: orderDetail,
+                isEditable: isEditable,
                 showAddToCart: true,
               ),
           ],
@@ -1303,11 +1316,15 @@ class _OrderDetailViewState extends State<OrderDetailView> {
   Widget _buildReplacementCard(
     OrderItem item,
     OrderReplacement replacement, {
+    required int index,
+    required OrderDetail orderDetail,
+    required bool isEditable,
     bool showAddToCart = false,
   }) {
     final imageUrl = _buildProductImageUrl(replacement.product.image);
+    final canEditReplacement = isEditable;
     final lineTotal =
-        (replacement.quantity * (double.tryParse(replacement.salePrice) ?? 0))
+        (item.quantity * (double.tryParse(replacement.salePrice) ?? 0))
             .toStringAsFixed(2);
     final replacementUnit = replacement.product.unit.isNotEmpty
         ? replacement.product.unit
@@ -1463,11 +1480,6 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                                     background: Colors.white,
                                     textColor: const Color(0xFF0D4E48),
                                   ),
-                                  _buildItemTag(
-                                    text: 'Qty ${replacement.quantity}',
-                                    background: const Color(0xFFD8F0EC),
-                                    textColor: const Color(0xFF00695C),
-                                  ),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 10,
@@ -1499,6 +1511,23 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                                       ),
                                     ),
                                   ),
+                                  if (canEditReplacement) ...[
+                                    _buildQuantityControls(
+                                      item,
+                                      index,
+                                      orderDetail,
+                                    ),
+                                    _buildDeleteButton(
+                                      item,
+                                      index,
+                                      orderDetail,
+                                    ),
+                                  ] else
+                                    _buildItemTag(
+                                      text: 'Qty ${item.quantity}',
+                                      background: const Color(0xFFD8F0EC),
+                                      textColor: const Color(0xFF00695C),
+                                    ),
                                 ],
                               ),
                             ],
@@ -1588,19 +1617,6 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                         ],
                       ),
                     ),
-                    if (showAddToCart) ...[
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: _buildBuyAgainButton(
-                          label: 'Add to Cart',
-                          onTap: () => _addReplacementToCart(
-                            replacement,
-                            fallbackWeight: item.weight,
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -1640,46 +1656,6 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                   color: _muted.withValues(alpha: 0.70),
                 ),
               ),
-      ),
-    );
-  }
-
-  Widget _buildBuyAgainButton({
-    required VoidCallback onTap,
-    String label = 'Buy Again',
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: _softGreen,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: _accent.withValues(alpha: 0.1)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.add_shopping_cart_rounded,
-                size: 14,
-                color: _accent,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  color: _accent,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

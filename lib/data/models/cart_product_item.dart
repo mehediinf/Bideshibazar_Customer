@@ -1,5 +1,7 @@
 // lib/data/models/cart_product_item.dart
 
+import 'package:flutter/material.dart';
+
 class CartProductItem extends StatelessWidget {
   final String image;
   final String title;
@@ -80,6 +82,36 @@ class CartProductItem extends StatelessWidget {
               _QuantityControl(quantity: quantity),
             ],
           )
+        ],
+      ),
+    );
+  }
+}
+
+class _QuantityControl extends StatelessWidget {
+  final int quantity;
+
+  const _QuantityControl({required this.quantity});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.remove, size: 16),
+          const SizedBox(width: 8),
+          Text(
+            '$quantity',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(width: 8),
+          const Icon(Icons.add, size: 16),
         ],
       ),
     );
