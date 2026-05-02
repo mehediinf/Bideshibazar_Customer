@@ -1,5 +1,8 @@
 // lib/presentation/auth/mobile_email_otp_login.dart
 
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../constants/app_colors.dart';
@@ -35,10 +38,14 @@ class _MobileEmailOtpLoginState extends State<MobileEmailOtpLogin> {
   final GoogleAuthService _googleAuthService = GoogleAuthService();
   final AppleAuthService _appleAuthService = AppleAuthService();
 
+  bool get _isIos => !kIsWeb && Platform.isIOS;
+
   @override
   void initState() {
     super.initState();
-    _checkAppleSignInAvailability();
+    if (_isIos) {
+      _checkAppleSignInAvailability();
+    }
   }
 
   @override
@@ -48,6 +55,15 @@ class _MobileEmailOtpLoginState extends State<MobileEmailOtpLogin> {
   }
 
   Future<void> _checkAppleSignInAvailability() async {
+    if (!_isIos) {
+      if (mounted) {
+        setState(() {
+          _isAppleSignInAvailable = false;
+        });
+      }
+      return;
+    }
+
     final isAvailable = await _appleAuthService.isAvailable();
     if (mounted) {
       setState(() {
@@ -359,295 +375,383 @@ class _MobileEmailOtpLoginState extends State<MobileEmailOtpLogin> {
     );
   }
 
+  static bool _isTabletLayout(Size size) => size.shortestSide >= 600;
+
+  static bool _isWideTabletLayout(Size size) =>
+      _isTabletLayout(size) && size.width >= 840;
+
+  Widget _illustration(double height) {
+    return Image.asset(
+      'assets/images/mobile_email_vector.png',
+      height: height,
+      fit: BoxFit.contain,
+    );
+  }
+
+  Widget _loginCard({required bool isTablet}) {
+    final titleSize = isTablet ? 20.0 : 18.0;
+    final subtitleSize = isTablet ? 14.0 : 13.0;
+    final fieldHeight = isTablet ? 58.0 : 54.0;
+    final buttonHeight = isTablet ? 54.0 : 50.0;
+    final cardPadding = isTablet ? 26.0 : 22.0;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(cardPadding),
+      decoration: BoxDecoration(
+        color: AppColors.cardColor,
+        borderRadius: BorderRadius.circular(isTablet ? 24 : 20),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 14,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            isPhone ? 'Login with Phone Number' : 'Login with Email',
+            style: TextStyle(
+              fontSize: titleSize,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: isTablet ? 8 : 6),
+          Text(
+            isPhone
+                ? 'Enter your phone number to receive OTP'
+                : 'Enter your email to receive OTP',
+            style: TextStyle(
+              fontSize: subtitleSize,
+              color: Colors.grey,
+            ),
+          ),
+          SizedBox(height: isTablet ? 22 : 18),
+          Container(
+            height: fieldHeight,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF6F7FB),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                if (isPhone) ...[
+                  Text(
+                    '🇦🇹 +43',
+                    style: TextStyle(fontSize: isTablet ? 17 : 16),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  child: TextFormField(
+                    key: ValueKey<bool>(isPhone),
+                    controller: _inputController,
+                    keyboardType: isPhone
+                        ? TextInputType.phone
+                        : TextInputType.emailAddress,
+                    textInputAction: TextInputAction.done,
+                    autocorrect: false,
+                    enableSuggestions: !isPhone,
+                    autofillHints: isPhone
+                        ? const [AutofillHints.telephoneNumber]
+                        : const [AutofillHints.email],
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return isPhone
+                            ? 'Please enter phone number'
+                            : 'Please enter email';
+                      }
+                      if (isPhone && !_isValidPhone(value)) {
+                        return 'Please enter valid phone number';
+                      }
+                      if (!isPhone && !_isValidEmail(value)) {
+                        return 'Please enter valid email';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: isPhone
+                          ? 'Enter phone number'
+                          : 'Enter email address',
+                      border: InputBorder.none,
+                      errorStyle: TextStyle(fontSize: isTablet ? 12 : 11),
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    setState(() {
+                      isPhone = !isPhone;
+                      _inputController.clear();
+                    });
+                  },
+                  child: Icon(
+                    isPhone ? Icons.email_outlined : Icons.phone_outlined,
+                    color: AppColors.primaryBlue,
+                    size: isTablet ? 26 : 24,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: isTablet ? 24 : 22),
+          SizedBox(
+            width: double.infinity,
+            height: buttonHeight,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              onPressed: _isLoading ? null : _sendOtp,
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(
+                      'Send OTP',
+                      style: TextStyle(
+                        fontSize: isTablet ? 16 : 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+          SizedBox(height: isTablet ? 16 : 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Already have an account? ',
+                style: TextStyle(fontSize: isTablet ? 14 : 13),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginPage()),
+                  );
+                },
+                child: Text(
+                  'Log In',
+                  style: TextStyle(
+                    fontSize: isTablet ? 14 : 13,
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _socialRow({required bool isTablet}) {
+    final iconPad = isTablet ? 18.0 : 14.0;
+    final avatarR = isTablet ? 32.0 : 28.0;
+    final imgH = isTablet ? 46.0 : 42.0;
+
+    Widget wrapSocial(
+      String asset, {
+      VoidCallback? onTap,
+      bool isLoading = false,
+      bool isDisabled = false,
+    }) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: iconPad),
+        child: GestureDetector(
+          onTap: isDisabled ? null : onTap,
+          child: Opacity(
+            opacity: isDisabled ? 0.4 : 1.0,
+            child: CircleAvatar(
+              radius: avatarR,
+              backgroundColor:
+                  isLoading ? Colors.grey.shade200 : Colors.white,
+              child: isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryBlue,
+                        ),
+                      ),
+                    )
+                  : Image.asset(asset, height: imgH),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        wrapSocial(
+          'assets/icons/logos_google.png',
+          onTap: _isGoogleLoading ? null : _handleGoogleSignIn,
+          isLoading: _isGoogleLoading,
+        ),
+        if (_isIos)
+          wrapSocial(
+            'assets/icons/logos_apple.png',
+            onTap: _isAppleLoading ? null : _handleAppleSignIn,
+            isLoading: _isAppleLoading,
+            isDisabled: !_isAppleSignInAvailable,
+          ),
+        wrapSocial('assets/icons/logos_facebook.png'),
+        wrapSocial(
+          'assets/icons/logos_email.png',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const EmailOtpLoginPage()),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _findAccountLink({required bool isTablet}) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const FindAccountPage()),
+        );
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search, size: isTablet ? 24 : 22),
+          const SizedBox(width: 6),
+          Text(
+            'Find my account',
+            style: TextStyle(
+              fontSize: isTablet ? 17 : 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final tablet = _isTabletLayout(size);
+    final wideTablet = _isWideTabletLayout(size);
+
+    final horizontalInset = tablet ? 32.0 : 20.0;
+    final verticalInset = tablet ? 20.0 : 12.0;
+
+    final imageHeight = wideTablet
+        ? (size.height * 0.38).clamp(220.0, 360.0)
+        : tablet
+            ? (size.height * 0.22).clamp(140.0, 200.0)
+            : (size.height * 0.175).clamp(96.0, 165.0);
+
+    final maxCardWidth = tablet ? 520.0 : double.infinity;
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+
     return Scaffold(
       backgroundColor: AppColors.bgColor,
       body: SafeArea(
         child: Form(
           key: _formKey,
-          child: Column(
-            children: [
-              const SizedBox(height: 30),
-
-              // Top Illustration
-              Image.asset('assets/images/mobile_email_vector.png', height: 250),
-
-              const SizedBox(height: 20),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    color: AppColors.cardColor,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 14,
-                        offset: Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isPhone
-                            ? 'Login with Phone Number'
-                            : 'Login with Email',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-
-                      const SizedBox(height: 6),
-
-                      Text(
-                        isPhone
-                            ? 'Enter your phone number to receive OTP'
-                            : 'Enter your email to receive OTP',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey,
-                        ),
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      Container(
-                        height: 54,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF6F7FB),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Row(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final body = wideTablet
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Prefix for phone
-                            if (isPhone) ...[
-                              const Text(
-                                '🇦🇹 +43',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-
                             Expanded(
-                              child: TextFormField(
-                                controller: _inputController,
-                                keyboardType: isPhone
-                                    ? TextInputType.phone
-                                    : TextInputType.emailAddress,
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return isPhone
-                                        ? 'Please enter phone number'
-                                        : 'Please enter email';
-                                  }
-
-                                  if (isPhone && !_isValidPhone(value)) {
-                                    return 'Please enter valid phone number';
-                                  }
-
-                                  if (!isPhone && !_isValidEmail(value)) {
-                                    return 'Please enter valid email';
-                                  }
-
-                                  return null;
-                                },
-                                decoration: InputDecoration(
-                                  hintText: isPhone
-                                      ? 'Enter phone number'
-                                      : 'Enter email address',
-                                  border: InputBorder.none,
-                                  errorStyle: const TextStyle(fontSize: 11),
-                                ),
+                              flex: 5,
+                              child: Center(
+                                child: _illustration(imageHeight),
                               ),
                             ),
-
-                            // Toggle Icon
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  isPhone = !isPhone;
-                                  _inputController.clear();
-                                });
-                              },
-                              child: Icon(
-                                isPhone
-                                    ? Icons.email_outlined
-                                    : Icons.phone_outlined,
-                                color: AppColors.primaryBlue,
+                            SizedBox(width: tablet ? 28 : 16),
+                            Expanded(
+                              flex: 6,
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 480),
+                                  child: _loginCard(isTablet: true),
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-
-                      const SizedBox(height: 22),
-
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryBlue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
+                        SizedBox(height: tablet ? 36 : 28),
+                        _socialRow(isTablet: tablet),
+                        SizedBox(height: tablet ? 28 : 20),
+                        _findAccountLink(isTablet: tablet),
+                      ],
+                    )
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SizedBox(height: tablet ? 12 : 8),
+                        Center(child: _illustration(imageHeight)),
+                        SizedBox(height: tablet ? 24 : 16),
+                        Center(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: maxCardWidth),
+                            child: _loginCard(isTablet: tablet),
                           ),
-                          onPressed: _isLoading ? null : _sendOtp,
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
-                                )
-                              : const Text(
-                                  'Send OTP',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
                         ),
-                      ),
+                        SizedBox(height: tablet ? 32 : 24),
+                        _socialRow(isTablet: tablet),
+                        SizedBox(height: tablet ? 28 : 20),
+                        _findAccountLink(isTablet: tablet),
+                      ],
+                    );
 
-                      const SizedBox(height: 14),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Already have an account? ',
-                            style: TextStyle(fontSize: 13),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const LoginPage(),
-                                ),
-                              );
-                            },
-                            child: const Text(
-                              'Log In',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppColors.primaryBlue,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+              return ListView(
+                physics: const BouncingScrollPhysics(),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.fromLTRB(
+                  horizontalInset,
+                  verticalInset,
+                  horizontalInset,
+                  verticalInset + bottomInset + 8,
                 ),
-              ),
-
-              const Spacer(),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _socialIcon(
-                    'assets/icons/logos_google.png',
-                    onTap: _isGoogleLoading ? null : _handleGoogleSignIn,
-                    isLoading: _isGoogleLoading,
-                  ),
-                  _socialIcon(
-                    'assets/icons/logos_apple.png',
-                    onTap: _isAppleLoading ? null : _handleAppleSignIn,
-                    isLoading: _isAppleLoading,
-                    isDisabled: !_isAppleSignInAvailable,
-                  ),
-                  _socialIcon('assets/icons/logos_facebook.png'),
-                  _socialIcon(
-                    'assets/icons/logos_email.png',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const EmailOtpLoginPage(),
-                        ),
-                      );
-                    },
+                  ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                    child: body,
                   ),
                 ],
-              ),
-
-              const SizedBox(height: 64),
-
-              // Find Account
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const FindAccountPage()),
-                  );
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.search, size: 22),
-                    SizedBox(width: 6),
-                    Text(
-                      'Find my account',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 28),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _socialIcon(
-    String asset, {
-    VoidCallback? onTap,
-    bool isLoading = false,
-    bool isDisabled = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: GestureDetector(
-        onTap: isDisabled ? null : onTap,
-        child: Opacity(
-          opacity: isDisabled ? 0.4 : 1.0,
-          child: CircleAvatar(
-            radius: 28,
-            backgroundColor: isLoading ? Colors.grey.shade200 : Colors.white,
-            child: isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.primaryBlue,
-                      ),
-                    ),
-                  )
-                : Image.asset(asset, height: 42),
+              );
+            },
           ),
         ),
       ),

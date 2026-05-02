@@ -16,9 +16,14 @@ plugins {
 }
 
 android {
-    namespace = "com.mtach.bideshibazar.bideshibazar"
+    namespace = "com.mtach.bideshibazar"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+    val googleMapsApiKey = (
+        project.findProperty("GOOGLE_MAPS_API_KEY") as String?
+            ?: System.getenv("MAPS_API_KEY")
+    ) ?: "YOUR_GOOGLE_MAPS_API_KEY"
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -49,6 +54,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
     }
 
     buildTypes {

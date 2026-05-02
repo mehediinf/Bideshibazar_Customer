@@ -12,7 +12,7 @@
         <string>$(DEVELOPMENT_LANGUAGE)</string>
 
         <key>CFBundleDisplayName</key>
-        <string>Bideshibazar</string>
+        <string>BideshiBazar</string>
 
         <key>CFBundleExecutable</key>
         <string>$(EXECUTABLE_NAME)</string>
@@ -24,7 +24,7 @@
         <string>6.0</string>
 
         <key>CFBundleName</key>
-        <string>bideshibazar</string>
+        <string>BideshiBazar</string>
 
         <key>CFBundlePackageType</key>
         <string>APPL</string>
@@ -37,7 +37,7 @@
 
         <!-- Google Maps -->
         <key>GMSApiKey</key>
-        <string>AIzaSyDIvBiG8pVMxAYpC05x0saNux_1GZEwP-A</string>
+        <string>$(GOOGLE_MAPS_API_KEY)</string>
 
         <!-- Google Sign In -->
         <key>CFBundleURLTypes</key>

@@ -1,8 +1,10 @@
 // lib/presentation/search/search_view.dart
 
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:developer' as developer;
 import '../../core/network/api_constants.dart';
 import '../../core/utils/app_error_helper.dart';
@@ -21,20 +23,42 @@ class _SearchViewState extends State<SearchView> {
   final TextEditingController _searchController = TextEditingController();
   List<dynamic> _searchResults = [];
   bool _isLoading = false;
+  bool _awaitingSearch = false;
   String _searchQuery = '';
   String? _errorMessage;
+  Timer? _searchDebounce;
+  int _searchRequestId = 0;
+
+  static const Duration _searchDebounceDelay = Duration(milliseconds: 300);
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(() {
-      if (_searchController.text.isEmpty) {
-        setState(() {
-          _searchResults = [];
-          _searchQuery = '';
-          _errorMessage = null;
-        });
-      }
+  }
+
+  void _scheduleSearchFromField(String raw) {
+    _searchDebounce?.cancel();
+    final trimmed = raw.trim();
+
+    if (trimmed.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _searchQuery = '';
+        _errorMessage = null;
+        _isLoading = false;
+        _awaitingSearch = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _searchQuery = trimmed;
+      _errorMessage = null;
+      _awaitingSearch = true;
+    });
+
+    _searchDebounce = Timer(_searchDebounceDelay, () {
+      _performSearch(trimmed);
     });
   }
 
@@ -42,9 +66,11 @@ class _SearchViewState extends State<SearchView> {
     if (keyword.trim().isEmpty) return;
 
     final trimmedKeyword = keyword.trim();
+    final int requestId = ++_searchRequestId;
 
     setState(() {
       _isLoading = true;
+      _awaitingSearch = false;
       _searchQuery = trimmedKeyword;
       _errorMessage = null;
     });
@@ -92,12 +118,16 @@ class _SearchViewState extends State<SearchView> {
           developer.log(json.encode(allProducts[0]));
         }
 
+        if (!mounted || requestId != _searchRequestId) return;
+
         setState(() {
           _searchResults = allProducts;
           _isLoading = false;
           _errorMessage = allProducts.isEmpty ? 'No products found for "$trimmedKeyword"' : null;
         });
       } else {
+        if (!mounted || requestId != _searchRequestId) return;
+
         setState(() {
           _isLoading = false;
           _searchResults = [];
@@ -105,6 +135,8 @@ class _SearchViewState extends State<SearchView> {
         });
       }
     } catch (e) {
+      if (!mounted || requestId != _searchRequestId) return;
+
       setState(() {
         _isLoading = false;
         _searchResults = [];
@@ -156,16 +188,20 @@ class _SearchViewState extends State<SearchView> {
   }
 
   void _clearSearch() {
+    _searchDebounce?.cancel();
     _searchController.clear();
     setState(() {
       _searchResults = [];
       _searchQuery = '';
       _errorMessage = null;
+      _isLoading = false;
+      _awaitingSearch = false;
     });
   }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -194,7 +230,14 @@ class _SearchViewState extends State<SearchView> {
             controller: _searchController,
             autofocus: true,
             textInputAction: TextInputAction.search,
-            onSubmitted: _performSearch,
+            onSubmitted: (value) {
+              _searchDebounce?.cancel();
+              _performSearch(value);
+            },
+            onChanged: (value) {
+              setState(() {});
+              _scheduleSearchFromField(value);
+            },
             style: const TextStyle(fontSize: 15),
             decoration: InputDecoration(
               hintText: 'Search for products',
@@ -230,7 +273,7 @@ class _SearchViewState extends State<SearchView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Search Query Header
-          if (_searchQuery.isNotEmpty && !_isLoading)
+          if (_searchQuery.isNotEmpty && !_isLoading && !_awaitingSearch)
             Container(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Row(
@@ -277,7 +320,7 @@ class _SearchViewState extends State<SearchView> {
   }
 
   Widget _buildContent() {
-    if (_isLoading) {
+    if (_isLoading || _awaitingSearch) {
       return _buildLoadingState();
     }
 

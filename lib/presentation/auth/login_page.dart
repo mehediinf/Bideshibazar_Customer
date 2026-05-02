@@ -1,5 +1,8 @@
 // lib/presentation/auth/login_page.dart
 
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
@@ -37,10 +40,14 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _isAppleSignInAvailable = false;
 
+  bool get _isIos => !kIsWeb && Platform.isIOS;
+
   @override
   void initState() {
     super.initState();
-    _checkAppleSignInAvailability();
+    if (_isIos) {
+      _checkAppleSignInAvailability();
+    }
   }
 
   @override
@@ -53,6 +60,15 @@ class _LoginPageState extends State<LoginPage> {
   //  CHECK APPLE SIGN-IN AVAILABILITY
 
   Future<void> _checkAppleSignInAvailability() async {
+    if (!_isIos) {
+      if (mounted) {
+        setState(() {
+          _isAppleSignInAvailable = false;
+        });
+      }
+      return;
+    }
+
     final isAvailable = await _appleAuthService.isAvailable();
     if (mounted) {
       setState(() {
@@ -68,6 +84,10 @@ class _LoginPageState extends State<LoginPage> {
   //  APPLE SIGN-IN HANDLER
 
   Future<void> _handleAppleSignIn() async {
+    if (!_isIos) {
+      return;
+    }
+
     // Check availability first
     if (!_isAppleSignInAvailable) {
       _showToast('Apple Sign-In is not available on this device');
@@ -793,14 +813,15 @@ class _LoginPageState extends State<LoginPage> {
                                     : _handleGoogleSignIn,
                                 isLoading: isGoogleLoading,
                               ),
-                              _socialIcon(
-                                'assets/icons/logos_apple.png',
-                                onTap: isAppleLoading
-                                    ? null
-                                    : _handleAppleSignIn,
-                                isLoading: isAppleLoading,
-                                isDisabled: !_isAppleSignInAvailable,
-                              ),
+                              if (_isIos)
+                                _socialIcon(
+                                  'assets/icons/logos_apple.png',
+                                  onTap: isAppleLoading
+                                      ? null
+                                      : _handleAppleSignIn,
+                                  isLoading: isAppleLoading,
+                                  isDisabled: !_isAppleSignInAvailable,
+                                ),
                               _socialIcon('assets/icons/logos_facebook.png'),
                               _socialIcon('assets/icons/logos_email_phone.png'),
                             ],
@@ -880,7 +901,9 @@ class _LoginPageState extends State<LoginPage> {
     bool isLoading = false,
     bool isDisabled = false,
   }) {
-    return GestureDetector(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: GestureDetector(
       onTap: isDisabled
           ? null
           : (onTap ??
@@ -919,6 +942,7 @@ class _LoginPageState extends State<LoginPage> {
               : Image.asset(asset, height: 42, width: 42),
         ),
       ),
+    ),
     );
   }
 }

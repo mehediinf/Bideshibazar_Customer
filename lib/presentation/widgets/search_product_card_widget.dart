@@ -296,13 +296,18 @@ class _SearchProductCardWidgetState extends State<SearchProductCardWidget> {
                               height: 14,
                               color: Colors.grey[300],
                             ),
-                            Text(
-                              '$weight $unitName',
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: -0.1,
+                            Expanded(
+                              child: Text(
+                                '$weight $unitName',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: false,
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: -0.1,
+                                ),
                               ),
                             ),
                           ],
